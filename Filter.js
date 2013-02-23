@@ -92,9 +92,10 @@
     var arg = this.arg;
     var height = image.height;
     var width = image.width;
+    var rgb;
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
+        rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
         ans.data[offset++] = rgb[0];
         ans.data[offset++] = rgb[1];
         ans.data[offset++] = rgb[2];
@@ -218,6 +219,7 @@
     var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0;
     var arg = this.arg;
+    var rgb;
     var go = function(i) {
       var c = cc;
       var height = image.height;
@@ -225,7 +227,7 @@
       for (; i < height && c; i++, c--) {
         for (var j = 0; j < width; j++) {
           // offset = (i * image.width + j) * 4;
-          var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
+          rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
           ans.data[offset++] = rgb[0];
           ans.data[offset++] = rgb[1];
           ans.data[offset++] = rgb[2];
