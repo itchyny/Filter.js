@@ -1,0 +1,92 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-size: 90%;
+  font-family: times,arial,"Times New Roman";
+}
+
+canvas {
+  float: left;
+  display: inline-block;
+  -khtml-user-select: none;
+  cursor: default;
+  user-select: none;
+  width: 24.9%;
+  height: 45%;
+}
+
+canvas#main {
+  clear: left;
+  width: 50%;
+  height: 90%;
+}
+
+div#header {
+  height: 10%;
+  display: table;
+  white-space: nowrap;
+}
+
+div#header > * {
+  display: table-cell;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+div#header > div#filter {
+  display: table-cell;
+  vertical-align: middle;
+  height: inherit;
+  padding: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+
+div#header div.eachfilter {
+  float: left;
+  display: table;
+  height: 100%;
+  cursor: pointer;
+  margin: auto .2em;
+}
+
+div#header div#filter {
+  padding: 0 2em;
+}
+
+div#header div.eachfilter.select > a {
+  text-decoration: underline;
+}
+
+div#header div.eachfilter > a {
+  display: table-cell;
+  vertical-align: middle;
+  text-decoration: none;
+  padding: 0 .5em;
+}
+
+h1 {
+  padding: 0 1em;
+  font-size: 200%;
+}
+
+div#buttons .buttonwrap {
+  margin-top: 1%;
+  display: block;
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+div#buttons .eachbutton {
+  min-width: 130px;
+  display: inline-block;
+  vertical-align: top;
+}
+
