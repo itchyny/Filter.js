@@ -61,7 +61,7 @@
 
   Filter.option = {};
 
-  Filter.option.LAZY_WEIGHT = 3000;
+  Filter.option.LAZY_WEIGHT = 9000;
 
   Filter.option.LAZY_WAIT_MSEC = 1;
 
@@ -92,9 +92,10 @@
     var arg = this.arg;
     var height = image.height;
     var width = image.width;
+    var rgb;
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
+        rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
         ans.data[offset++] = rgb[0];
         ans.data[offset++] = rgb[1];
         ans.data[offset++] = rgb[2];
@@ -138,26 +139,28 @@
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
     var offset = 0, dataoffset = 0;
     var arg = this.arg;
+    var arglen = arg.length;
     var halfsize = parseInt(arg.length / 2);
-    var restsize = arg.length - halfsize;
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
     for (var i = 0; i < height; i++) {
-      var kmax = Math.min(i + restsize, height) - i;
-      var kmin = Math.max(i - halfsize, 0) - i;
+      var kmax = Math.min(arglen, height + halfsize - i);
+      var kmin = Math.max(0, halfsize - i);
       for (var j = 0; j < width; j++) {
         var r = 0, g = 0, b = 0;
-        var lmax = Math.min(j + restsize, width) - j;
-        var lmin = Math.max(j - halfsize, 0) - j;
+        var lmax = Math.min(arglen, width + halfsize - j);
+        var lmin = Math.max(0, halfsize - j);
         var kdiff = width4 + (lmin - lmax) * 4;
-        dataoffset = ((i + kmin) * width + j + lmin) * 4;
-        for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
-          for (var l = lmin; l < lmax; l++) {
-            // dataoffset = ((i + k) * width + j + l) * 4;
-            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+        var argkl, k, l;
+        dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
+        for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
+          for (l = lmin; l < lmax; l++) {
+            // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
+            argkl = arg[k][l];
+            r += argkl * image.data[dataoffset++];
+            g += argkl * image.data[dataoffset++];
+            b += argkl * image.data[dataoffset++];
           }
         }
         ans.data[offset++] = r;
@@ -213,17 +216,18 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0;
     var arg = this.arg;
+    var rgb;
     var go = function(i) {
-      var c = cc;
+      var irest = icounter;
       var height = image.height;
       var width = image.width;
-      for (; i < height && c; i++, c--) {
+      for (; i < height && irest; i++, irest--) {
         for (var j = 0; j < width; j++) {
           // offset = (i * image.width + j) * 4;
-          var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
+          rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
           ans.data[offset++] = rgb[0];
           ans.data[offset++] = rgb[1];
           ans.data[offset++] = rgb[2];
@@ -248,15 +252,15 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0;
     var dataoffset = 0;
     var arg = this.arg;
     var height = image.height;
     var width = image.width;
     var go = function(i) {
-      var c = cc;
-      for (; i < height && c; i++, c--) {
+      var irest = icounter;
+      for (; i < height && irest; i++, irest--) {
         for (var j = 0; j < width; j++) {
           var xy = arg(j, i, width, height);
           dataoffset = (xy[1] * width + xy[0]) * 4;
@@ -284,31 +288,33 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0, dataoffset = 0;
     var arg = this.arg;
+    var arglen = arg.length;
     var halfsize = parseInt(arg.length / 2);
-    var restsize = arg.length - halfsize;
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
     var go = function(i) {
-      var c = cc;
-      for (; i < height && c; i++, c--) {
-        var kmax = Math.min(i + restsize, height) - i;
-        var kmin = Math.max(i - halfsize, 0) - i;
+      var irest = icounter;
+      for (; i < height && irest; i++, irest--) {
+        var kmax = Math.min(arglen, height + halfsize - i);
+        var kmin = Math.max(0, halfsize - i);
         for (var j = 0; j < width; j++) {
           var r = 0, g = 0, b = 0;
-          var lmax = Math.min(j + restsize, width) - j;
-          var lmin = Math.max(j - halfsize, 0) - j;
+          var lmax = Math.min(arglen, width + halfsize - j);
+          var lmin = Math.max(0, halfsize - j);
           var kdiff = width4 + (lmin - lmax) * 4;
-          dataoffset = ((i + kmin) * width + j + lmin) * 4;
-          for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
-            for (var l = lmin; l < lmax; l++, dataoffset++) {
-              // dataoffset = ((i + k) * width + j + l) * 4;
-              r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-              g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-              b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+          var argkl, k, l;
+          dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
+          for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
+            for (l = lmin; l < lmax; l++, dataoffset++) {
+              // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
+              argkl = arg[k][l];
+              r += argkl * image.data[dataoffset++];
+              g += argkl * image.data[dataoffset++];
+              b += argkl * image.data[dataoffset++];
             }
           }
           ans.data[offset++] = r;
