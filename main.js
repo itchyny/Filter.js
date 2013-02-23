@@ -172,7 +172,7 @@
       this.imageDataAutosize = this.loadImageAutosize(this.image);
       if (this.filterLoaders.length === 0) {
         for (var i = 0; i < this.filterList.length; i++) {
-          this.filterLoaders[i] = new Filter.Loader(this.filterList[i].filter, this.imageDataAutosize);
+          this.filterLoaders[i] = new Loader(this.filterList[i].filter, this.imageDataAutosize);
         }
       }
     }
