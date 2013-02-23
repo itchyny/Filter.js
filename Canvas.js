@@ -17,9 +17,13 @@
     }
   };
 
+<<<<<<< HEAD
   if (!global.Filter) return;
 
   if (global.Filter && global.Filter.Loader) return;
+=======
+  if (!global.Filter || !global.Loader) return;
+>>>>>>> master
 
   if (global.Canvas) return;
 
@@ -263,6 +267,7 @@
            this.browserToCanvas(event)));
   };
 
+<<<<<<< HEAD
   Filter.Loader = function FilterLoader(filter, image) {
     this.filter = filter;
     this.imageLarge = this.image = image;
@@ -324,6 +329,8 @@
     image.src = cvs.toDataURL();
   };
 
+=======
+>>>>>>> master
   global.Canvas = Canvas;
 
 })(this);
