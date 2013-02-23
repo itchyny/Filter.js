@@ -5,6 +5,11 @@
     return;
   }
 
+  if (typeof Filter === 'undefined') {
+    console.log('Loader.js required');
+    return;
+  }
+
   CanvasRenderingContext2D.prototype.clear =
   CanvasRenderingContext2D.prototype.clear || function(preserveTransform) {
     if (preserveTransform) {
@@ -26,11 +31,11 @@
     this.initialize();
   }
 
-  Canvas.prototype.setFilter = function(filter) {
-    this.filter = filter;
+  Canvas.prototype.setFilter = function(loader) {
+    this.loader = loader;
     this.image = null;
     this.imageLarge = null;
-    this.canvas.title = filter.filter.description || '';
+    this.canvas.title = this.loader.filter.description || '';
   };
 
   Canvas.prototype.setImage = function(image) {
@@ -146,11 +151,11 @@
 
   Canvas.prototype.load = function() {
     var self = this;
-    if (self.filter) {
+    if (self.loader) {
       if (self.image) {
         self.draw(self.image);
       } else {
-        self.filter.load(function(result) {
+        self.loader.load(function(result) {
           self.image = result;
           self.draw(result);
         });
@@ -163,13 +168,13 @@
   Canvas.prototype.loadLarge = function(callback) {
     if (!callback) return;
     var self = this;
-    if (self.filter) {
+    if (self.loader) {
       if (self.imageLarge) {
         self.draw(self.imageLarge);
         callback();
       } else {
-        self.filter.loadLarge(function(result) {
-          if (self.filter === this) {
+        self.loader.loadLarge(function(result) {
+          if (self.loader === this) {
             self.imageLarge = result;
             self.draw(result);
           }
