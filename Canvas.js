@@ -123,7 +123,9 @@
       } else {
         e.rec--;
       }
-      var delta = (e.wheelDelta ? e.wheelDelta : e.detail ? e.detail * (-100) : 0) / 1600;
+      var delta = (e.wheelDelta ? e.wheelDelta
+                                : e.detail ? e.detail * (-100) 
+                                           : 0) / 1600;
       var zoom = 1 + delta;
       if (self.scale / self.orig_scale < 0.30 && zoom < 1) return;
       self.scale *= zoom;
