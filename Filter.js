@@ -49,7 +49,7 @@
       }
       s = s.slice(0, s.length - 3) + ']';
       this.description = s;
-    } else if (type === 'translate' || type === 'kernelfn') {
+    } else if (type === 'translate') {
       this.filter = Filter.filter[type];
       this.filterLazy = Filter.filterLazy[type];
     }
