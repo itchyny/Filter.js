@@ -7,13 +7,18 @@
   }
   delete test;
 
-  if (typeof Canvas === 'undefined') {
-    console.log('Canvas.js required');
+  if (typeof Filter === 'undefined') {
+    console.log('Filter.js required');
     return;
   }
 
-  if (typeof Filter === 'undefined') {
-    console.log('Filter.js required');
+  if (typeof Loader === 'undefined') {
+    console.log('Loader.js required');
+    return;
+  }
+
+  if (typeof Canvas === 'undefined') {
+    console.log('Canvas.js required');
     return;
   }
 

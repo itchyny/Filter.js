@@ -9,7 +9,7 @@
 
   if (global.Filter && global.Loader) return;
 
-  Loader = function FilterLoader(filter, image) {
+  function Loader(filter, image) {
     this.filter = filter;
     this.imageLarge = this.image = image;
   };
@@ -68,6 +68,8 @@
     };
     image.src = cvs.toDataURL();
   };
+
+  global.Loader = Loader;
 
 })(this);
 
