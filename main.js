@@ -36,8 +36,6 @@
       self.initializeFilters();
       self.initializeUserInterface();
       self.initializeCanvas();
-      if (typeof InitializeTwitter !== 'undefined') InitializeTwitter();
-      if (typeof InitializeFacebook !== 'undefined') InitializeFacebook();
     };
     window.onresize = function(event) {
       return self.resize(event);

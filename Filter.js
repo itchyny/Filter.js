@@ -86,8 +86,10 @@
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
     var offset = 0;
     var arg = this.arg;
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++, offset += 4) {
+    var height = image.height;
+    var width = image.width;
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++, offset += 4) {
         var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
         ans.data[offset] = rgb[0];
         ans.data[offset + 1] = rgb[1];
@@ -108,8 +110,10 @@
     var offset = 0;
     var dataoffset = 0;
     var arg = this.arg;
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++, offset += 4) {
+    var height = image.height;
+    var width = image.width;
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++, offset += 4) {
         var xy = arg(j, i, image.width, image.height);
         dataoffset = (xy[1] * image.width + xy[0]) * 4;
         ans.data[offset] = image.data[dataoffset];
@@ -132,11 +136,15 @@
     var arg = this.arg;
     var halfsize = parseInt(arg.length / 2);
     var restsize = arg.length - halfsize;
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++, offset += 4) {
+    var height = image.height;
+    var width = image.width;
+    for (var i = 0; i < height; i++) {
+      var kmax = Math.min(i + restsize, image.height) - i;
+      for (var j = 0; j < width; j++, offset += 4) {
         var r = 0, g = 0, b = 0;
-        for (var k = Math.max(i - halfsize, 0) - i; k < Math.min(i + restsize, image.height) - i; k++) {
-          for (var l = Math.max(j - halfsize, 0) - j; l < Math.min(j + restsize, image.width) - j; l++) {
+        var jmax = Math.min(j + restsize, image.width) - j;
+        for (var k = Math.max(i - halfsize, 0) - i; k < kmax; k++) {
+          for (var l = Math.max(j - halfsize, 0) - j; l < jmax; l++) {
             dataoffset = ((i + k) * image.width + j + l) * 4;
             r += arg[k + halfsize][l + halfsize] * image.data[dataoffset];
             g += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 1];
@@ -163,8 +171,10 @@
     var arg = this.arg;
     var halfsize = parseInt(arg.length / 2);
     var restsize = arg.length - halfsize;
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++, offset += 4) {
+    var height = image.height;
+    var width = image.width;
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++, offset += 4) {
         var r = 0, g = 0, b = 0;
         var kmax = Math.min(i + restsize, image.height) - i;
         var jmax = Math.min(j + restsize, image.width) - j;
@@ -199,8 +209,10 @@
     var arg = this.arg;
     var go = function(i) {
       var c = cc;
-      for (; i < image.height && c; i++, c--) {
-        for (var j = 0; j < image.width; j++, offset += 4) {
+      var height = image.height;
+      var width = image.width;
+      for (; i < height && c; i++, c--) {
+        for (var j = 0; j < width; j++, offset += 4) {
           // offset = (i * image.width + j) * 4;
           var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
           ans.data[offset] = rgb[0];
@@ -231,10 +243,12 @@
     var offset = 0;
     var dataoffset = 0;
     var arg = this.arg;
+    var height = image.height;
+    var width = image.width;
     var go = function(i) {
       var c = cc;
-      for (; i < image.height && c; i++, c--) {
-        for (var j = 0; j < image.width; j++, offset += 4) {
+      for (; i < height && c; i++, c--) {
+        for (var j = 0; j < width; j++, offset += 4) {
           var xy = arg(j, i, image.width, image.height);
           dataoffset = (xy[1] * image.width + xy[0]) * 4;
           ans.data[offset] = image.data[dataoffset];
@@ -266,12 +280,14 @@
     var arg = this.arg;
     var halfsize = parseInt(arg.length / 2);
     var restsize = arg.length - halfsize;
+    var height = image.height;
+    var width = image.width;
     var go = function(i) {
       var c = cc;
-      for (; i < image.height && c; i++, c--) {
-        for (var j = 0; j < image.width; j++, offset += 4) {
+      for (; i < height && c; i++, c--) {
+        var kmax = Math.min(i + restsize, image.height) - i;
+        for (var j = 0; j < width; j++, offset += 4) {
           var r = 0, g = 0, b = 0;
-          var kmax = Math.min(i + restsize, image.height) - i;
           var jmax = Math.min(j + restsize, image.width) - j;
           for (var k = Math.max(i - halfsize, 0) - i; k < kmax; k++) {
             for (var l = Math.max(j - halfsize, 0) - j; l < jmax; l++) {
@@ -308,9 +324,11 @@
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
     var offset = 0;
     var dataoffset = 0;
-    for (var i = 0; i < image.height; i++, dataoffset += image.width * 4) {
+    var height = image.height;
+    var width = image.width;
+    for (var i = 0; i < height; i++, dataoffset += image.width * 4) {
       for (var k = 0; k < mag; k++, dataoffset -= image.width * 4) {
-        for (var j = 0; j < image.width; j++, dataoffset += 4) {
+        for (var j = 0; j < width; j++, dataoffset += 4) {
           for (var l = 0; l < mag; l++, offset += 4) {
             // offset = ((i * mag + k) * ans.width + j * mag + l) * 4;
             ans.data[offset] = image.data[dataoffset];
