@@ -137,7 +137,7 @@
     if ('onmousewheel' in document) {
       cvs.onmousewheel = self.onmousewheel;
     } else {
-      cvs.addEventListener('DOMMouseScroll', self.onmousewheel, false); // TODO: not working on firefox
+      cvs.addEventListener('DOMMouseScroll', self.onmousewheel, false);
     }
   };
 
