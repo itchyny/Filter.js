@@ -111,7 +111,6 @@
       if (e.rec > 0) self.nextCanvas.canvas.onmouseup(e);
     };
     self.onmousewheel = function(e) {
-      var selff = self;
       if (typeof e.rec === 'undefined') {
         e.master = self;
         e.rec = 4;
@@ -121,15 +120,15 @@
       }
       var delta = (e.wheelDelta ? e.wheelDelta : e.detail ? e.detail * (-100) : 0) / 1600;
       var zoom = 1 + delta;
-      if (selff.scale / selff.orig_scale < 0.30 && zoom < 1) return;
-      selff.scale *= zoom;
-      var pos = selff.imageToCanvas(selff.propToImage(e.pos));
+      if (self.scale / self.orig_scale < 0.30 && zoom < 1) return;
+      self.scale *= zoom;
+      var pos = self.imageToCanvas(self.propToImage(e.pos));
       if (!pos) return;
-      selff.translateX += pos.x * (1 - zoom) / selff.scale;
-      selff.translateY += pos.y * (1 - zoom) / selff.scale;
-      selff.load();
+      self.translateX += pos.x * (1 - zoom) / self.scale;
+      self.translateY += pos.y * (1 - zoom) / self.scale;
+      self.load();
       if (e.rec > 0) {
-        selff.nextCanvas.onmousewheel(e);
+        self.nextCanvas.onmousewheel(e);
       }
     };
     if ('onmousewheel' in document) {
