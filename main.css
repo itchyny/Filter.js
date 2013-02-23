@@ -90,3 +90,7 @@ div#buttons .eachbutton {
   vertical-align: top;
 }
 
+#p180-root {
+  visibility: hidden !important;
+}
+
