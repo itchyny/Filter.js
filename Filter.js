@@ -216,15 +216,15 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0;
     var arg = this.arg;
     var rgb;
     var go = function(i) {
-      var c = cc;
+      var irest = icounter;
       var height = image.height;
       var width = image.width;
-      for (; i < height && c; i++, c--) {
+      for (; i < height && irest; i++, irest--) {
         for (var j = 0; j < width; j++) {
           // offset = (i * image.width + j) * 4;
           rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
@@ -252,15 +252,15 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0;
     var dataoffset = 0;
     var arg = this.arg;
     var height = image.height;
     var width = image.width;
     var go = function(i) {
-      var c = cc;
-      for (; i < height && c; i++, c--) {
+      var irest = icounter;
+      for (; i < height && irest; i++, irest--) {
         for (var j = 0; j < width; j++) {
           var xy = arg(j, i, width, height);
           dataoffset = (xy[1] * width + xy[0]) * 4;
@@ -288,7 +288,7 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var cc = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0, dataoffset = 0;
     var arg = this.arg;
     var halfsize = parseInt(arg.length / 2);
@@ -297,8 +297,8 @@
     var width = image.width;
     var width4 = width * 4;
     var go = function(i) {
-      var c = cc;
-      for (; i < height && c; i++, c--) {
+      var irest = icounter;
+      for (; i < height && irest; i++, irest--) {
         var kmax = Math.min(i + restsize, height) - i + halfsize;
         var kmin = Math.max(i - halfsize, 0) - i + halfsize;
         for (var j = 0; j < width; j++) {
