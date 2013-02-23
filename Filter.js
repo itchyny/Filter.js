@@ -61,7 +61,7 @@
 
   Filter.option = {};
 
-  Filter.option.LAZY_WEIGHT = 3000;
+  Filter.option.LAZY_WEIGHT = 9000;
 
   Filter.option.LAZY_WAIT_MSEC = 1;
 
@@ -139,18 +139,18 @@
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
     var offset = 0, dataoffset = 0;
     var arg = this.arg;
+    var arglen = arg.length;
     var halfsize = parseInt(arg.length / 2);
-    var restsize = arg.length - halfsize;
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
     for (var i = 0; i < height; i++) {
-      var kmax = Math.min(i + restsize, height) - i + halfsize;
-      var kmin = Math.max(i - halfsize, 0) - i + halfsize;
+      var kmax = Math.min(arglen, height + halfsize - i);
+      var kmin = Math.max(0, halfsize - i);
       for (var j = 0; j < width; j++) {
         var r = 0, g = 0, b = 0;
-        var lmax = Math.min(j + restsize, width) - j + halfsize;
-        var lmin = Math.max(j - halfsize, 0) - j + halfsize;
+        var lmax = Math.min(arglen, width + halfsize - j);
+        var lmin = Math.max(0, halfsize - j);
         var kdiff = width4 + (lmin - lmax) * 4;
         var argkl, k, l;
         dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
@@ -291,22 +291,21 @@
     var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
     var offset = 0, dataoffset = 0;
     var arg = this.arg;
+    var arglen = arg.length;
     var halfsize = parseInt(arg.length / 2);
-    var restsize = arg.length - halfsize;
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
     var go = function(i) {
       var irest = icounter;
       for (; i < height && irest; i++, irest--) {
-        var kmax = Math.min(i + restsize, height) - i + halfsize;
-        var kmin = Math.max(i - halfsize, 0) - i + halfsize;
+        var kmax = Math.min(arglen, height + halfsize - i);
+        var kmin = Math.max(0, halfsize - i);
         for (var j = 0; j < width; j++) {
           var r = 0, g = 0, b = 0;
-          var lmax = Math.min(j + restsize, width) - j + halfsize;
-          var lmin = Math.max(j - halfsize, 0) - j + halfsize;
+          var lmax = Math.min(arglen, width + halfsize - j);
+          var lmin = Math.max(0, halfsize - j);
           var kdiff = width4 + (lmin - lmax) * 4;
-          var argkl;
           var argkl, k, l;
           dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
           for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
