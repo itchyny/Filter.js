@@ -5,7 +5,7 @@
     return;
   }
 
-  if (typeof Filter === 'undefined') {
+  if (typeof Loader === 'undefined') {
     console.log('Loader.js required');
     return;
   }
@@ -22,9 +22,12 @@
     }
   };
 
-  if (!global.Filter || !global.Loader) return;
+  if (!global.Filter) return;
+
+  if (!global.Loader) return;
 
   if (global.Canvas) return;
+
 
   function Canvas(canvas) {
     this.canvas = canvas;
