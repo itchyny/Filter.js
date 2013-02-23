@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas Filter</title>
+  <link rel="stylesheet" href="main.css" type="text/css" media="screen">
+  <script type="text/javascript">
+    function InitializeTwitter() {
+      (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (!d.getElementById(id)) {
+         js = d.createElement(s);
+         js.id = id;
+         js.src = "//platform.twitter.com/widgets.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }
+      } (document, "script", "twitter-wjs"));
+    }
+  </script>
+  <script type="text/javascript">
+    function InitializeFacebook() {
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
+        fjs.parentNode.insertBefore(js, fjs);
+      } (document, 'script', 'facebook-jssdk'));
+    }
+  </script>
+  <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+  <script type="text/javascript" src="Filter.js"></script>
+  <script type="text/javascript" src="Canvas.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+  <div id="header">
+    <div><h1>Canvas Filter</h1></div>
+    <div><input type="file" id="input" /></div>
+    <div id="filter"></div>
+    <div id="buttons">
+      <div class="buttonwrap">
+        <div class="eachbutton">
+          <a href="https://twitter.com/share" class="twitter-share-button" data-via="itchyny"></a>
+      </div>
+        <div class="eachbutton">
+          <div class="g-plusone" data-size="medium" data-href="./"></div>
+      </div>
+      </div>
+      <div class="buttonwrap">
+        <div class="eachbutton">
+          <a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="standard-balloon" title="このエントリーをはてなブックマークに追加"><img src="http://b.st-hatena.com/images/entry-button/button-only.gif" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a>
+          <script type="text/javascript" src="http://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script>
+        </div>
+        <div class="eachbutton">
+          <div class="fb-like" data-href="./" data-send="false" data-layout="button_count" data-width="120" data-show-faces="false"></div>
+          <div id="fb-root"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <canvas id="main"></canvas>
+  <canvas id="red"></canvas>
+  <canvas id="green"></canvas>
+  <canvas id="blue"></canvas>
+  <canvas id="black"></canvas>
+</body>
+</html>
+
