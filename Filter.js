@@ -49,7 +49,7 @@
       }
       s = s.slice(0, s.length - 3) + ']';
       this.description = s;
-    } else if (type === 'translate' || type === 'kernelfn') {
+    } else if (type === 'translate') {
       this.filter = Filter.filter[type];
       this.filterLazy = Filter.filterLazy[type];
     }
@@ -352,7 +352,8 @@
   Filter.luminance2 = new Filter('gray', Filter.option.luminance2);
 
   Filter.minimum = new Filter('each', function(r, g, b) {
-    var w = r > g ? (g > b ? b : g) : (r > b ? b : r);
+    var w = r > g ? (g > b ? b : g)
+                  : (r > b ? b : r);
     return [ w, w, w ];
   });
   Filter.minimum.description = "w' = min(r, g, b),\nr' = g' = b' = w'";
