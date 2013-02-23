@@ -2,10 +2,14 @@
 
   if (global.Filter) return;
 
+  function formatnumber(num) {
+    return Math.round(num * 10000) / 10000;
+  }
+
   function format(arr) {
     var newarr = [];
     for (var i = 0; i < arr.length; i++) {
-      newarr[i] = Math.round(arr[i] * 10000) / 10000;
+      newarr[i] = formatnumber(arr[i]);
     }
     return newarr;
   }
@@ -89,12 +93,12 @@
     var height = image.height;
     var width = image.width;
     for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++, offset += 4) {
+      for (var j = 0; j < width; j++) {
         var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
-        ans.data[offset] = rgb[0];
-        ans.data[offset + 1] = rgb[1];
-        ans.data[offset + 2] = rgb[2];
-        ans.data[offset + 3] = image.data[offset + 3];
+        ans.data[offset++] = rgb[0];
+        ans.data[offset++] = rgb[1];
+        ans.data[offset++] = rgb[2];
+        ans.data[offset] = image.data[offset++];
       }
     }
     return ans;
@@ -113,13 +117,53 @@
     var height = image.height;
     var width = image.width;
     for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++, offset += 4) {
-        var xy = arg(j, i, image.width, image.height);
-        dataoffset = (xy[1] * image.width + xy[0]) * 4;
-        ans.data[offset] = image.data[dataoffset];
-        ans.data[offset + 1] = image.data[dataoffset + 1];
-        ans.data[offset + 2] = image.data[dataoffset + 2];
-        ans.data[offset + 3] = image.data[dataoffset + 3];
+      for (var j = 0; j < width; j++) {
+        var xy = arg(j, i, width, height);
+        dataoffset = (xy[1] * width + xy[0]) * 4;
+        ans.data[offset++] = image.data[dataoffset++];
+        ans.data[offset++] = image.data[dataoffset++];
+        ans.data[offset++] = image.data[dataoffset++];
+        ans.data[offset++] = image.data[dataoffset++];
+      }
+    }
+    return ans;
+  };
+
+  Filter.filter.kernel = function(image) {
+    var cvs = document.createElement('canvas');
+    cvs.width = image.width;
+    cvs.height = image.height;
+    var ctx = cvs.getContext('2d');
+    var ans = ctx.createImageData(cvs.width, cvs.height);
+    ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
+    var offset = 0, dataoffset = 0;
+    var arg = this.arg;
+    var halfsize = parseInt(arg.length / 2);
+    var restsize = arg.length - halfsize;
+    var height = image.height;
+    var width = image.width;
+    var width4 = width * 4;
+    for (var i = 0; i < height; i++) {
+      var kmax = Math.min(i + restsize, height) - i;
+      var kmin = Math.max(i - halfsize, 0) - i;
+      for (var j = 0; j < width; j++) {
+        var r = 0, g = 0, b = 0;
+        var lmax = Math.min(j + restsize, width) - j;
+        var lmin = Math.max(j - halfsize, 0) - j;
+        var kdiff = width4 + (lmin - lmax) * 4;
+        dataoffset = ((i + kmin) * width + j + lmin) * 4;
+        for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
+          for (var l = lmin; l < lmax; l++) {
+            // dataoffset = ((i + k) * width + j + l) * 4;
+            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+          }
+        }
+        ans.data[offset++] = r;
+        ans.data[offset++] = g;
+        ans.data[offset++] = b;
+        ans.data[offset++] = image.data[dataoffset++];
       }
     }
     return ans;
@@ -139,57 +183,22 @@
     var height = image.height;
     var width = image.width;
     for (var i = 0; i < height; i++) {
-      var kmax = Math.min(i + restsize, image.height) - i;
-      for (var j = 0; j < width; j++, offset += 4) {
+      for (var j = 0; j < width; j++) {
         var r = 0, g = 0, b = 0;
-        var jmax = Math.min(j + restsize, image.width) - j;
+        var kmax = Math.min(i + restsize, height) - i;
+        var lmax = Math.min(j + restsize, width) - j;
         for (var k = Math.max(i - halfsize, 0) - i; k < kmax; k++) {
-          for (var l = Math.max(j - halfsize, 0) - j; l < jmax; l++) {
-            dataoffset = ((i + k) * image.width + j + l) * 4;
-            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset];
-            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 1];
-            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 2];
+          for (var l = Math.max(j - halfsize, 0) - j; l < lmax; l++) {
+            dataoffset = ((i + k) * width + j + l) * 4;
+            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
           }
         }
-        ans.data[offset] = r;
-        ans.data[offset + 1] = g;
-        ans.data[offset + 2] = b;
-        ans.data[offset + 3] = image.data[offset + 3];
-      }
-    }
-    return ans;
-  };
-
-  Filter.filter.kernel = function(image) {
-    var cvs = document.createElement('canvas');
-    cvs.width = image.width;
-    cvs.height = image.height;
-    var ctx = cvs.getContext('2d');
-    var ans = ctx.createImageData(cvs.width, cvs.height);
-    ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var offset = 0, dataoffset = 0;
-    var arg = this.arg;
-    var halfsize = parseInt(arg.length / 2);
-    var restsize = arg.length - halfsize;
-    var height = image.height;
-    var width = image.width;
-    for (var i = 0; i < height; i++) {
-      for (var j = 0; j < width; j++, offset += 4) {
-        var r = 0, g = 0, b = 0;
-        var kmax = Math.min(i + restsize, image.height) - i;
-        var jmax = Math.min(j + restsize, image.width) - j;
-        for (var k = Math.max(i - halfsize, 0) - i; k < kmax; k++) {
-          for (var l = Math.max(j - halfsize, 0) - j; l < jmax; l++) {
-            dataoffset = ((i + k) * image.width + j + l) * 4;
-            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset];
-            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 1];
-            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 2];
-          }
-        }
-        ans.data[offset] = r;
-        ans.data[offset + 1] = g;
-        ans.data[offset + 2] = b;
-        ans.data[offset + 3] = image.data[offset + 3];
+        ans.data[offset++] = r;
+        ans.data[offset++] = g;
+        ans.data[offset++] = b;
+        ans.data[offset] = image.data[offset++];
       }
     }
     return ans;
@@ -212,16 +221,16 @@
       var height = image.height;
       var width = image.width;
       for (; i < height && c; i++, c--) {
-        for (var j = 0; j < width; j++, offset += 4) {
+        for (var j = 0; j < width; j++) {
           // offset = (i * image.width + j) * 4;
           var rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
-          ans.data[offset] = rgb[0];
-          ans.data[offset + 1] = rgb[1];
-          ans.data[offset + 2] = rgb[2];
-          ans.data[offset + 3] = image.data[offset + 3];
+          ans.data[offset++] = rgb[0];
+          ans.data[offset++] = rgb[1];
+          ans.data[offset++] = rgb[2];
+          ans.data[offset] = image.data[offset++];
         }
       }
-      if (i >= image.height) {
+      if (i >= height) {
         callback(ans);
       } else {
         setTimeout (function() {
@@ -248,16 +257,16 @@
     var go = function(i) {
       var c = cc;
       for (; i < height && c; i++, c--) {
-        for (var j = 0; j < width; j++, offset += 4) {
-          var xy = arg(j, i, image.width, image.height);
-          dataoffset = (xy[1] * image.width + xy[0]) * 4;
-          ans.data[offset] = image.data[dataoffset];
-          ans.data[offset + 1] = image.data[dataoffset + 1];
-          ans.data[offset + 2] = image.data[dataoffset + 2];
-          ans.data[offset + 3] = image.data[dataoffset + 3];
+        for (var j = 0; j < width; j++) {
+          var xy = arg(j, i, width, height);
+          dataoffset = (xy[1] * width + xy[0]) * 4;
+          ans.data[offset++] = image.data[dataoffset++];
+          ans.data[offset++] = image.data[dataoffset++];
+          ans.data[offset++] = image.data[dataoffset++];
+          ans.data[offset++] = image.data[dataoffset++];
         }
       }
-      if (i >= image.height) {
+      if (i >= height) {
         callback(ans);
       } else {
         setTimeout (function() {
@@ -282,28 +291,33 @@
     var restsize = arg.length - halfsize;
     var height = image.height;
     var width = image.width;
+    var width4 = width * 4;
     var go = function(i) {
       var c = cc;
       for (; i < height && c; i++, c--) {
-        var kmax = Math.min(i + restsize, image.height) - i;
-        for (var j = 0; j < width; j++, offset += 4) {
+        var kmax = Math.min(i + restsize, height) - i;
+        var kmin = Math.max(i - halfsize, 0) - i;
+        for (var j = 0; j < width; j++) {
           var r = 0, g = 0, b = 0;
-          var jmax = Math.min(j + restsize, image.width) - j;
-          for (var k = Math.max(i - halfsize, 0) - i; k < kmax; k++) {
-            for (var l = Math.max(j - halfsize, 0) - j; l < jmax; l++) {
-              dataoffset = ((i + k) * image.width + j + l) * 4;
-              r += arg[k + halfsize][l + halfsize] * image.data[dataoffset];
-              g += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 1];
-              b += arg[k + halfsize][l + halfsize] * image.data[dataoffset + 2];
+          var lmax = Math.min(j + restsize, width) - j;
+          var lmin = Math.max(j - halfsize, 0) - j;
+          var kdiff = width4 + (lmin - lmax) * 4;
+          dataoffset = ((i + kmin) * width + j + lmin) * 4;
+          for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
+            for (var l = lmin; l < lmax; l++, dataoffset++) {
+              // dataoffset = ((i + k) * width + j + l) * 4;
+              r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+              g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+              b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
             }
           }
-          ans.data[offset] = r;
-          ans.data[offset + 1] = g;
-          ans.data[offset + 2] = b;
-          ans.data[offset + 3] = image.data[offset + 3];
+          ans.data[offset++] = r;
+          ans.data[offset++] = g;
+          ans.data[offset++] = b;
+          ans.data[offset] = image.data[offset++];
         }
       }
-      if (i >= image.height) {
+      if (i >= height) {
         callback(ans);
       } else {
         setTimeout (function() {
@@ -326,15 +340,15 @@
     var dataoffset = 0;
     var height = image.height;
     var width = image.width;
-    for (var i = 0; i < height; i++, dataoffset += image.width * 4) {
-      for (var k = 0; k < mag; k++, dataoffset -= image.width * 4) {
-        for (var j = 0; j < width; j++, dataoffset += 4) {
-          for (var l = 0; l < mag; l++, offset += 4) {
+    for (var i = 0; i < height; i++, dataoffset += width * 4) {
+      for (var k = 0; k < mag; k++, dataoffset -= width * 4) {
+        for (var j = 0; j < width; j++) {
+          for (var l = 0; l < mag; l++) {
             // offset = ((i * mag + k) * ans.width + j * mag + l) * 4;
-            ans.data[offset] = image.data[dataoffset];
-            ans.data[offset + 1] = image.data[dataoffset + 1];
-            ans.data[offset + 2] = image.data[dataoffset + 2];
-            ans.data[offset + 3] = image.data[dataoffset + 3];
+            ans.data[offset++] = image.data[dataoffset++];
+            ans.data[offset++] = image.data[dataoffset++];
+            ans.data[offset++] = image.data[dataoffset++];
+            ans.data[offset++] = image.data[dataoffset++];
           }
         }
       }
@@ -393,19 +407,19 @@
       [ .272, .534, .131 ]]);
 
   Filter.flipVertical = new Filter('translate', function(x, y, width, height) {
-    return [ width - x, y ];
+    return [ width - x - 1, y ];
   });
-  Filter.flipVertical.description = "(x, y) -> (width - x, y)";
+  Filter.flipVertical.description = "(x, y) -> (width - x - 1, y)";
 
   Filter.flipHorizontal = new Filter('translate', function(x, y, width, height) {
-    return [ x, height - y ];
+    return [ x, height - y - 1 ];
   });
-  Filter.flipHorizontal.description = "(x, y) -> (x, height - y)";
+  Filter.flipHorizontal.description = "(x, y) -> (x, height - y - 1)";
 
   Filter.flipBoth = new Filter('translate', function(x, y, width, height) {
-    return [ width - x, height - y ];
+    return [ width - x - 1, height - y - 1 ];
   });
-  Filter.flipBoth.description = "(x, y) -> (width - x, height - y)";
+  Filter.flipBoth.description = "(x, y) -> (width - x - 1, height - y - 1)";
 
   Filter.binary = function(threshold) {
     var binary = new Filter('each', function(r, g, b) {
@@ -446,7 +460,7 @@
     var contrast = new Filter('each', function(r, g, b) {
       return [ cache[r], cache[g], cache[b] ];
     });
-    contrast.description = 'f(x) = ' + Math.round(tilt * 10000) / 10000 + ' * (x - 128) + 128,\n' +
+    contrast.description = 'f(x) = ' + formatnumber(tilt) + ' * (x - 128) + 128,\n' +
                            "r' = f(r), " + "g' = f(g), " + "b' = f(b)";
     return contrast;
   };
@@ -460,7 +474,7 @@
     var filter = new Filter('each', function(r, g, b) {
       return [ cache[r], cache[g], cache[b] ];
     });
-    gamma = Math.round(gamma * 10000) / 10000;
+    gamma = formatnumber(gamma);
     filter.description = "r' = 255 * ((r / 255) ^ " + gamma + "),\n" +
                          "g' = 255 * ((g / 255) ^ " + gamma + "),\n" +
                          "b' = 255 * ((b / 255) ^ " + gamma + ")";
