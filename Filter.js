@@ -144,20 +144,22 @@
     var width = image.width;
     var width4 = width * 4;
     for (var i = 0; i < height; i++) {
-      var kmax = Math.min(i + restsize, height) - i;
-      var kmin = Math.max(i - halfsize, 0) - i;
+      var kmax = Math.min(i + restsize, height) - i + halfsize;
+      var kmin = Math.max(i - halfsize, 0) - i + halfsize;
       for (var j = 0; j < width; j++) {
         var r = 0, g = 0, b = 0;
-        var lmax = Math.min(j + restsize, width) - j;
-        var lmin = Math.max(j - halfsize, 0) - j;
+        var lmax = Math.min(j + restsize, width) - j + halfsize;
+        var lmin = Math.max(j - halfsize, 0) - j + halfsize;
         var kdiff = width4 + (lmin - lmax) * 4;
-        dataoffset = ((i + kmin) * width + j + lmin) * 4;
-        for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
-          for (var l = lmin; l < lmax; l++) {
-            // dataoffset = ((i + k) * width + j + l) * 4;
-            r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-            g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-            b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+        var argkl, k, l;
+        dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
+        for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
+          for (l = lmin; l < lmax; l++) {
+            // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
+            argkl = arg[k][l];
+            r += argkl * image.data[dataoffset++];
+            g += argkl * image.data[dataoffset++];
+            b += argkl * image.data[dataoffset++];
           }
         }
         ans.data[offset++] = r;
@@ -295,20 +297,23 @@
     var go = function(i) {
       var c = cc;
       for (; i < height && c; i++, c--) {
-        var kmax = Math.min(i + restsize, height) - i;
-        var kmin = Math.max(i - halfsize, 0) - i;
+        var kmax = Math.min(i + restsize, height) - i + halfsize;
+        var kmin = Math.max(i - halfsize, 0) - i + halfsize;
         for (var j = 0; j < width; j++) {
           var r = 0, g = 0, b = 0;
-          var lmax = Math.min(j + restsize, width) - j;
-          var lmin = Math.max(j - halfsize, 0) - j;
+          var lmax = Math.min(j + restsize, width) - j + halfsize;
+          var lmin = Math.max(j - halfsize, 0) - j + halfsize;
           var kdiff = width4 + (lmin - lmax) * 4;
-          dataoffset = ((i + kmin) * width + j + lmin) * 4;
-          for (var k = kmin; k < kmax; k++, dataoffset += kdiff) {
-            for (var l = lmin; l < lmax; l++, dataoffset++) {
-              // dataoffset = ((i + k) * width + j + l) * 4;
-              r += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-              g += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
-              b += arg[k + halfsize][l + halfsize] * image.data[dataoffset++];
+          var argkl;
+          var argkl, k, l;
+          dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
+          for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
+            for (l = lmin; l < lmax; l++, dataoffset++) {
+              // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
+              argkl = arg[k][l];
+              r += argkl * image.data[dataoffset++];
+              g += argkl * image.data[dataoffset++];
+              b += argkl * image.data[dataoffset++];
             }
           }
           ans.data[offset++] = r;
