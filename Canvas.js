@@ -129,13 +129,12 @@
       var delta = (e.wheelDelta ? e.wheelDelta
                                 : e.detail ? e.detail * (-100) 
                                            : 0) / 1600;
-      var zoom = 1 + delta;
-      if (self.scale / self.orig_scale < 0.30 && zoom < 1) return;
-      self.scale *= zoom;
+      if (self.scale / self.orig_scale < 0.30 && delta < 0) return;
+      self.scale *= (1 + delta);
       var pos = self.imageToCanvas(self.propToImage(e.pos));
       if (!pos) return;
-      self.translateX += pos.x * (1 - zoom) / self.scale;
-      self.translateY += pos.y * (1 - zoom) / self.scale;
+      self.translateX -= pos.x * delta / self.scale;
+      self.translateY -= pos.y * delta / self.scale;
       self.load();
       if (e.rec > 0) {
         self.nextCanvas.onmousewheel(e);
