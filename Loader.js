@@ -23,15 +23,10 @@
       callback(this.data);
       return;
     }
-    var cvs = document.createElement('canvas');
-    cvs.width = this.image.width;
-    cvs.height = this.image.height;
-    var ctx = cvs.getContext('2d');
     var self = this;
     this.convertToImage(this.filter.filter(this.image), function(data) {
       self.loaded = true;
       callback(self.data = data);
-      delete data.src;
     });
     return this.result;
   };
@@ -41,16 +36,11 @@
       callback.call(this, this.dataLarge);
       return;
     }
-    var cvs = document.createElement('canvas');
-    cvs.width = this.imageLarge.width;
-    cvs.height = this.imageLarge.height;
-    var ctx = cvs.getContext('2d');
     var self = this;
     this.filter.filterLazy(this.imageLarge, function(data) {
       self.convertToImage(data, function(resultLarge) {
         self.loadedLarge = true;
         callback.call(self, self.dataLarge = resultLarge);
-      delete resultLarge.src;
       });
     });
     return this.result;
