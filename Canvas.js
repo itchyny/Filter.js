@@ -91,7 +91,6 @@
       if (self.mousedown) {
         self.mousemove = true;
         cvs.style.cursor = 'move';
-        var ctx = cvs.getContext('2d');
         var posprev = self.propToImage(e.master.savepos);
         var posnew = self.propToImage(e.pos);
         self.translateX += posnew.x - posprev.x;
@@ -113,7 +112,6 @@
         e.rec--;
       }
       cvs.style.cursor = '';
-      var ctx = cvs.getContext('2d');
       self.mousedown = false;
       self.load();
       if (e.rec > 0) self.nextCanvas.canvas.onmouseup(e);
@@ -145,6 +143,12 @@
     } else {
       cvs.addEventListener('DOMMouseScroll', self.onmousewheel, false);
     }
+    cvs.ondblclick = function(e) {
+      self.loader.loadLarge(function(data) {
+        var win = window.open('about:blank', 'Canvas Filter result');
+        win.document.write('<img src="' + data.src + '" />');
+      });
+    };
   };
 
   Canvas.prototype.resize = function() {
