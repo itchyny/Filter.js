@@ -28,7 +28,6 @@
 
   if (global.Canvas) return;
 
-
   function Canvas(canvas) {
     this.canvas = canvas;
     this.initialize();
