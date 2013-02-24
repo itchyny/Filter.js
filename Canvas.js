@@ -78,7 +78,9 @@
       self.mousedown = true;
       self.mousemove = false;
       self.savepos = e.pos;
-      if (e.rec > 0) self.nextCanvas.canvas.onmousedown(e);
+      if (e.rec > 0) {
+        self.nextCanvas.canvas.onmousedown(e);
+      }
     };
     cvs.onmousemove = function(e) {
       if (typeof e.rec === 'undefined') {
@@ -96,7 +98,9 @@
         self.translateX += posnew.x - posprev.x;
         self.translateY += posnew.y - posprev.y;
         self.load();
-        if (e.rec > 0) self.nextCanvas.canvas.onmousemove(e);
+        if (e.rec > 0) {
+          self.nextCanvas.canvas.onmousemove(e);
+        }
       } else {
         cvs.style.cursor = '';
         document.body.onselectstart = function(e) {
@@ -114,7 +118,9 @@
       cvs.style.cursor = '';
       self.mousedown = false;
       self.load();
-      if (e.rec > 0) self.nextCanvas.canvas.onmouseup(e);
+      if (e.rec > 0) {
+        self.nextCanvas.canvas.onmouseup(e);
+      }
     };
     self.onmousewheel = function(e) {
       if (typeof e.rec === 'undefined') {
