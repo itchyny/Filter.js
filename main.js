@@ -164,6 +164,11 @@
       callback(image);
     };
     this.image.src = url.createObjectURL(file);
+    var self = this;
+    this.cvs[0].canvas.ondblclick = function(e) {
+      var win = window.open('about:blank', 'Canvas Filter result');
+      win.document.write('<img src="' + self.image.src + '" />');
+    };
   };
 
   Main.prototype.viewQuickly = function(image) {

@@ -149,10 +149,12 @@
       cvs.addEventListener('DOMMouseScroll', self.onmousewheel, false);
     }
     cvs.ondblclick = function(e) {
-      self.loader.loadLarge(function(data) {
-        var win = window.open('about:blank', 'Canvas Filter result');
-        win.document.write('<img src="' + data.src + '" />');
-      });
+      if (self.loader) {
+        self.loader.loadLarge(function(data) {
+          var win = window.open('about:blank', 'Canvas Filter result');
+          win.document.write('<img src="' + data.src + '" />');
+        });
+      }
     };
   };
 
