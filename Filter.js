@@ -349,7 +349,7 @@
       worker.onmessage = function(e) {
         callback(e.data);
       };
-      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, tilt: this.tilt });
+      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
     }
   };
 
