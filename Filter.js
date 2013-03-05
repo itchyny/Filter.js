@@ -2,6 +2,10 @@
 
   if (global.Filter) return;
 
+  var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') > -1 && navigator.userAgent.toLowerCase().indexOf('chrome/') == -1;
+
+  var notWorker = typeof Worker === 'undefined' || isSafari;
+
   function formatnumber(num) {
     return Math.round(num * 10000) / 10000;
   }
@@ -219,7 +223,7 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    if (typeof Worker === 'undefined') {
+    if (notWorker) {
       var arg = this.arg;
       var offset = 0;
       var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
@@ -307,7 +311,7 @@
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
-    if (typeof Worker === 'undefined') {
+    if (notWorker) {
       var go = function(i) {
         var irest = icounter;
         for (; i < height && irest; i++, irest--) {
