@@ -219,9 +219,7 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    // if (typeof Worker === 'undefined') {
-    console.log(typeof (this.variable));
-    if (typeof Worker === 'undefined' || typeof (this.variable) !== 'undefined') {
+    if (typeof Worker === 'undefined') {
       var arg = this.arg;
       var offset = 0;
       var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
@@ -252,10 +250,8 @@
     } else {
       var worker = new Worker('worker.js');
       worker.onmessage = function(e) {
-        console.log(e);
         callback(e.data);
       };
-      console.log({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
       worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
     }
   };
@@ -351,10 +347,9 @@
     } else {
       var worker = new Worker('worker.js');
       worker.onmessage = function(e) {
-        console.log(e);
         callback(e.data);
       };
-      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, tilt: this.tilt });
+      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
     }
   };
 
@@ -459,6 +454,8 @@
         return [ 0, 0, 0 ];
       }
     });
+    binary.variable = threshold;
+    binary.name = 'binary';
     var arg = Filter.option.luminance;
     binary.description = 'if (' + arg[0] + ' * r + ' +
                          arg[1] + ' * g + ' +
@@ -467,15 +464,31 @@
                          "  r' = g' = b' = 0";
     return binary;
   };
+  Filter.binary.arg = function(threshold) {
+    return function(r, g, b) {
+      if (Filter.option.luminanceFn(r, g, b) > threshold) {
+        return [ 255, 255, 255 ];
+      } else {
+        return [ 0, 0, 0 ];
+      }
+    };
+  };
 
   Filter.brightness = function(difference) {
     var brightness = new Filter('each', function(r, g, b) {
       return [ r + difference, g + difference, b + difference ];
     });
+    brightness.variable = difference;
+    brightness.name = 'brightness';
     brightness.description = "r' = r " + (difference >= 0 ? '+ ' + difference : '- ' + Math.abs(difference)) + ",\n" +
                              "g' = g " + (difference >= 0 ? '+ ' + difference : '- ' + Math.abs(difference)) + ",\n" +
                              "b' = b " + (difference >= 0 ? '+ ' + difference : '- ' + Math.abs(difference));
     return brightness;
+  };
+  Filter.brightness.arg = function(difference) {
+    return function(r, g, b) {
+      return [ r + difference, g + difference, b + difference ];
+    };
   };
 
   Filter.brighten = Filter.brightness(36);
@@ -491,7 +504,6 @@
       return [ cache[r], cache[g], cache[b] ];
     });
     contrast.variable = tilt;
-    contrast.type = 'contrast';
     contrast.name = 'contrast';
     contrast.description = 'f(x) = ' + formatnumber(tilt) + ' * (x - 128) + 128,\n' +
                            "r' = f(r), " + "g' = f(g), " + "b' = f(b)";
@@ -516,7 +528,6 @@
       return [ 255 * Math.pow(r / 255, gamma), 255 * Math.pow(g / 255, gamma), 255 * Math.pow(b / 255, gamma) ];
     });
     filter.variable = gamma;
-    filter.type = 'gamma';
     filter.name = 'gamma';
     gamma = formatnumber(gamma);
     filter.description = "r' = 255 * ((r / 255) ^ " + gamma + "),\n" +

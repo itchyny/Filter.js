@@ -1,20 +1,20 @@
 importScripts('Filter.js');
+
 onmessage = function(e) {
   var image = e.data.image;
   var ans = e.data.ans;
   var type = e.data.type;
   var arg = typeof (e.data.variable) !== 'undefined'
           ? Filter[e.data.name].arg(e.data.variable)
-          // ? Filter[e.data.name](e.data.variable).arg
           : Filter[e.data.name].arg;
   var offset = 0;
   var rgb = [];
   var height = image.height;
   var width = image.width;
   if (type === 'each') {
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++) {
-        offset = (i * image.width + j) * 4;
+    for (var i = 0; i < height; i++) {
+      for (var j = 0; j < width; j++) {
+        // offset = (i * width + j) * 4;
         rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
         ans.data[offset++] = rgb[0];
         ans.data[offset++] = rgb[1];
@@ -55,8 +55,6 @@ onmessage = function(e) {
   }
   postMessage(ans);
 };
-onerror = function(e) {
-  postMessage('');
-};
+onerror = function(e) {};
 
 

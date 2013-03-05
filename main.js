@@ -45,7 +45,7 @@
   Main.prototype.resize = function(event) {
     var cvs = this.cvs;
     var self = this;
-    if (!cvs.length) return;
+    if (!cvs || !cvs.length) return;
     for (var i = 0; i < cvs.length; i++) {
       cvs[i].resize();
     }
