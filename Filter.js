@@ -16,6 +16,7 @@
 
   function Filter(type, arg) {
     this.arg = arg;
+    this.type = 'each';
     this.filter = Filter.filter.each;
     this.filterLazy = Filter.filterLazy.each;
     if (type === 'color') {
@@ -45,6 +46,7 @@
                                       ' [' + format(arg[1]).toString() + '],\n' +
                                       ' [' + format(arg[2]).toString() + ']] ';
     } else if (type === 'kernel') {
+      this.type = 'kernel';
       this.filter = Filter.filter[type];
       this.filterLazy = Filter.filterLazy[type];
       var s = 'kernel:\n['
@@ -54,6 +56,7 @@
       s = s.slice(0, s.length - 3) + ']';
       this.description = s;
     } else if (type === 'translate') {
+      this.type = 'translate';
       this.filter = Filter.filter[type];
       this.filterLazy = Filter.filterLazy[type];
     }
@@ -216,33 +219,45 @@
     var ctx = cvs.getContext('2d');
     var ans = ctx.createImageData(cvs.width, cvs.height);
     ans.data = new Uint8ClampedArray(ans.width * ans.height * 4);
-    var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
-    var offset = 0;
-    var arg = this.arg;
-    var rgb;
-    var go = function(i) {
-      var irest = icounter;
-      var height = image.height;
-      var width = image.width;
-      for (; i < height && irest; i++, irest--) {
-        for (var j = 0; j < width; j++) {
-          // offset = (i * image.width + j) * 4;
-          rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
-          ans.data[offset++] = rgb[0];
-          ans.data[offset++] = rgb[1];
-          ans.data[offset++] = rgb[2];
-          ans.data[offset] = image.data[offset++];
+    // if (typeof Worker === 'undefined') {
+    console.log(typeof (this.variable));
+    if (typeof Worker === 'undefined' || typeof (this.variable) !== 'undefined') {
+      var arg = this.arg;
+      var offset = 0;
+      var icounter = parseInt(Filter.option.LAZY_WEIGHT / image.width) + 1;
+      var rgb;
+      var go = function(i) {
+        var irest = icounter;
+        var height = image.height;
+        var width = image.width;
+        for (; i < height && irest; i++, irest--) {
+          for (var j = 0; j < width; j++) {
+            // offset = (i * image.width + j) * 4;
+            rgb = arg(image.data[offset], image.data[offset + 1], image.data[offset + 2]);
+            ans.data[offset++] = rgb[0];
+            ans.data[offset++] = rgb[1];
+            ans.data[offset++] = rgb[2];
+            ans.data[offset] = image.data[offset++];
+          }
         }
-      }
-      if (i >= height) {
-        callback(ans);
-      } else {
-        setTimeout (function() {
-          go(i);
-        }, Filter.option.LAZY_WAIT_MSEC);
-      }
-    };
-    go(0);
+        if (i >= height) {
+          callback(ans);
+        } else {
+          setTimeout (function() {
+            go(i);
+          }, Filter.option.LAZY_WAIT_MSEC);
+        }
+      };
+      go(0);
+    } else {
+      var worker = new Worker('worker.js');
+      worker.onmessage = function(e) {
+        console.log(e);
+        callback(e.data);
+      };
+      console.log({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
+      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, variable: this.variable });
+    }
   };
 
   Filter.filterLazy.translate = function(image, callback) {
@@ -296,42 +311,51 @@
     var height = image.height;
     var width = image.width;
     var width4 = width * 4;
-    var go = function(i) {
-      var irest = icounter;
-      for (; i < height && irest; i++, irest--) {
-        var kmax = Math.min(arglen, height + halfsize - i);
-        var kmin = Math.max(0, halfsize - i);
-        for (var j = 0; j < width; j++) {
-          var r = 0, g = 0, b = 0;
-          var lmax = Math.min(arglen, width + halfsize - j);
-          var lmin = Math.max(0, halfsize - j);
-          var kdiff = width4 + (lmin - lmax) * 4;
-          var argkl, k, l;
-          dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
-          for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
-            for (l = lmin; l < lmax; l++, dataoffset++) {
-              // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
-              argkl = arg[k][l];
-              r += argkl * image.data[dataoffset++];
-              g += argkl * image.data[dataoffset++];
-              b += argkl * image.data[dataoffset++];
+    if (typeof Worker === 'undefined') {
+      var go = function(i) {
+        var irest = icounter;
+        for (; i < height && irest; i++, irest--) {
+          var kmax = Math.min(arglen, height + halfsize - i);
+          var kmin = Math.max(0, halfsize - i);
+          for (var j = 0; j < width; j++) {
+            var r = 0, g = 0, b = 0;
+            var lmax = Math.min(arglen, width + halfsize - j);
+            var lmin = Math.max(0, halfsize - j);
+            var kdiff = width4 + (lmin - lmax) * 4;
+            var argkl, k, l;
+            dataoffset = ((i + kmin - halfsize) * width + j + lmin - halfsize) * 4;
+            for (k = kmin; k < kmax; k++, dataoffset += kdiff) {
+              for (l = lmin; l < lmax; l++, dataoffset++) {
+                // dataoffset = ((i + (k - halfsize)) * width + j + (l - halfsize)) * 4;
+                argkl = arg[k][l];
+                r += argkl * image.data[dataoffset++];
+                g += argkl * image.data[dataoffset++];
+                b += argkl * image.data[dataoffset++];
+              }
             }
+            ans.data[offset++] = r;
+            ans.data[offset++] = g;
+            ans.data[offset++] = b;
+            ans.data[offset] = image.data[offset++];
           }
-          ans.data[offset++] = r;
-          ans.data[offset++] = g;
-          ans.data[offset++] = b;
-          ans.data[offset] = image.data[offset++];
         }
-      }
-      if (i >= height) {
-        callback(ans);
-      } else {
-        setTimeout (function() {
-          go(i);
-        }, Filter.option.LAZY_WAIT_MSEC);
-      }
-    };
-    go(0);
+        if (i >= height) {
+          callback(ans);
+        } else {
+          setTimeout (function() {
+            go(i);
+          }, Filter.option.LAZY_WAIT_MSEC);
+        }
+      };
+      go(0);
+    } else {
+      var worker = new Worker('worker.js');
+      worker.onmessage = function(e) {
+        console.log(e);
+        callback(e.data);
+      };
+      worker.postMessage({ image: image, ans: ans, name: this.name, type: this.type, tilt: this.tilt });
+    }
   };
 
   Filter.upConvert = function(image, scale) {
@@ -466,9 +490,19 @@
     var contrast = new Filter('each', function(r, g, b) {
       return [ cache[r], cache[g], cache[b] ];
     });
+    contrast.variable = tilt;
+    contrast.type = 'contrast';
+    contrast.name = 'contrast';
     contrast.description = 'f(x) = ' + formatnumber(tilt) + ' * (x - 128) + 128,\n' +
                            "r' = f(r), " + "g' = f(g), " + "b' = f(b)";
     return contrast;
+  };
+  Filter.contrast.arg = function(tilt) {
+    return function(r, g, b) {
+      return [ tilt * (r - 128) + 128,
+               tilt * (g - 128) + 128,
+               tilt * (b - 128) + 128 ];
+    };
   };
 
   // http://en.wikipedia.org/wiki/Gamma_correction
@@ -478,13 +512,22 @@
       cache[i] = 255 * Math.pow(i / 255, gamma);
     }
     var filter = new Filter('each', function(r, g, b) {
-      return [ cache[r], cache[g], cache[b] ];
+      // return [ cache[r], cache[g], cache[b] ];
+      return [ 255 * Math.pow(r / 255, gamma), 255 * Math.pow(g / 255, gamma), 255 * Math.pow(b / 255, gamma) ];
     });
+    filter.variable = gamma;
+    filter.type = 'gamma';
+    filter.name = 'gamma';
     gamma = formatnumber(gamma);
     filter.description = "r' = 255 * ((r / 255) ^ " + gamma + "),\n" +
                          "g' = 255 * ((g / 255) ^ " + gamma + "),\n" +
                          "b' = 255 * ((b / 255) ^ " + gamma + ")";
     return filter;
+  };
+  Filter.gamma.arg = function(gamma) {
+    return function(r, g, b) {
+      return [ 255 * Math.pow(r * 1.0 / 255, gamma), 255 * Math.pow(g * 1.0 / 255, gamma), 255 * Math.pow(b * 1.0 / 255, gamma) ];
+    };
   };
 
   Filter.edge = new Filter('kernel',
@@ -533,6 +576,10 @@
       [ 6 / 256, 24 / 256, 36 / 256, 24 / 256, 6 / 256 ],
       [ 4 / 256, 16 / 256, 24 / 256, 16 / 256, 4 / 256 ],
       [ 1 / 256, 4 / 256, 6 / 256, 4 / 256, 1 / 256 ]]);
+  
+  for (var x in Filter) {
+    Filter[x].name = x;
+  }
 
   global.Filter = Filter;
 
