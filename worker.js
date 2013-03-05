@@ -55,8 +55,6 @@ onmessage = function(e) {
   }
   postMessage(ans);
 };
-onerror = function(e) {
-  postMessage('');
-};
+onerror = function(e) {};
 
 
