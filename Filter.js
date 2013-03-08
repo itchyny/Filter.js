@@ -4,7 +4,8 @@
 
   var isSafari = navigator.userAgent.toLowerCase().indexOf('safari/') > -1 && navigator.userAgent.toLowerCase().indexOf('chrome/') == -1;
 
-  var notWorker = (typeof Worker === 'undefined' || isSafari) || !/http/.test(window.location.protocol);
+  var notWorker = (typeof Worker === 'undefined' || isSafari) ||
+                  (typeof window !== 'undefined' && typeof window.location !== 'undefined' && !/http/.test(window.location.protocol));
 
   function formatnumber(num) {
     return Math.round(num * 10000) / 10000;
